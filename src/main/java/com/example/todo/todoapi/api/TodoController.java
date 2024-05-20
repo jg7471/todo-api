@@ -2,8 +2,10 @@ package com.example.todo.todoapi.api;
 
 import com.example.todo.todoapi.dto.request.TodoCreateRequestDTO;
 import com.example.todo.todoapi.dto.request.TodoModifyRequestDTO;
+import com.example.todo.userapi.dto.request.UserSignUpRequestDTO;
 import com.example.todo.todoapi.dto.response.TodoListResponseDTO;
 import com.example.todo.todoapi.service.TodoService;
+import com.example.todo.userapi.dto.response.UserSignUpResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +14,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.ResultSet;
 import java.util.List;
 
 @RestController
@@ -70,7 +71,7 @@ public class TodoController {
     ) {
         log.info("api/todos/{} DELETE request!", todoId);
 
-        if(todoId == null || todoId.trim().equals("")){
+        if (todoId == null || todoId.trim().equals("")) {
             return ResponseEntity.badRequest()
                     .body("ID를 전달해 주세요!");
         }
@@ -84,14 +85,14 @@ public class TodoController {
     }
 
     //할 일 수정하기
-    //RequestMapping //?@@@ 한번에?
+
     @PatchMapping
     public ResponseEntity<?> updateTodo(
             @Validated @RequestBody TodoModifyRequestDTO requestDTO,
             BindingResult result
-    ){
+    ) {
         ResponseEntity<List<FieldError>> validatedResult = getValidatedResult(result);
-        if(validatedResult != null) return validatedResult;
+        if (validatedResult != null) return validatedResult;
 
         try {
             return ResponseEntity.ok().body(todoService.update(requestDTO));
@@ -116,4 +117,6 @@ public class TodoController {
                             .build());
         }
     }
+
+
 }
