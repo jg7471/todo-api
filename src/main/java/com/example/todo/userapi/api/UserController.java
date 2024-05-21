@@ -1,12 +1,16 @@
 package com.example.todo.userapi.api;
 
+import com.example.todo.auth.TokenUserInfo;
 import com.example.todo.userapi.dto.request.LoginRequestDTO;
 import com.example.todo.userapi.dto.request.UserSignUpRequestDTO;
+import com.example.todo.userapi.dto.response.LoginResponseDTO;
 import com.example.todo.userapi.dto.response.UserSignUpResponseDTO;
 import com.example.todo.userapi.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
@@ -76,12 +80,26 @@ public class UserController {
         if (response != null) return response;
 
         try {
-            String authenticate = userService.authenticate(dto);
-            return ResponseEntity.ok().body(authenticate);
+            LoginResponseDTO responseDTO = userService.authenticate(dto);
+            return ResponseEntity.ok().body(responseDTO);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
 
+    }
+
+    //일반 회원을 프리미엄 회원으로 승격하는 요청 처리
+    @PutMapping("/promote")
+    //권한 검사 (해당 권한이 아니라면 인가처리 거부-> 403 상태 리턴)
+    //메서드 호출 전에 검사 -> 요청 당시 토큰에 있는 user 정보가 ROLE_COMMON이라는 권한을 가지고 있는지 검사
+    @PreAuthorize("hasRole('ROLE_COMMON')")
+    public ResponseEntity<?> promote(
+            @AuthenticationPrincipal TokenUserInfo userInfo
+    ){
+        log.info("/api/auth/promote - PUT!");
+
+        return null;
     }
 
 

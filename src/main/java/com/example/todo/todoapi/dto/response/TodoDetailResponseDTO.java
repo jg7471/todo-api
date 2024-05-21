@@ -19,7 +19,7 @@ public class TodoDetailResponseDTO {
     //엔터티를 DTO로 변경하는 생성자
 
 
-    public TodoDetailResponseDTO(Todo todo) {
+    public TodoDetailResponseDTO(Todo todo) { //@@@
         this.id = todo.getTodoId();
         this.title = todo.getTitle();
         this.done = todo.isDone();

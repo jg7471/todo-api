@@ -5,7 +5,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class CustonServletConfig implements WebMvcConfigurer {
+public class CustomServletConfig implements WebMvcConfigurer {
 
 
     //고대로 복붙해서 사용해도 OK

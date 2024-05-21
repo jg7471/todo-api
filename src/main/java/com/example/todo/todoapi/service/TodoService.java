@@ -6,6 +6,8 @@ import com.example.todo.todoapi.dto.response.TodoDetailResponseDTO;
 import com.example.todo.todoapi.dto.response.TodoListResponseDTO;
 import com.example.todo.todoapi.entity.Todo;
 import com.example.todo.todoapi.repository.TodoRepository;
+import com.example.todo.userapi.entity.User;
+import com.example.todo.userapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,16 +24,31 @@ import java.util.stream.Collectors;
 public class TodoService {
 
     private final TodoRepository todoRepository;
+    private final UserRepository userRepository;
 
-    public TodoListResponseDTO create(TodoCreateRequestDTO requestDTO) throws Exception {
-        todoRepository.save(requestDTO.toEntity());//dto->entity
-        log.info("할 일 저장 완료 {}", requestDTO.getTitle());
-        return retrieve();
+    public TodoListResponseDTO create(
+            final TodoCreateRequestDTO requestDTO,
+            final String userId) throws Exception {
+
+        // 이제는 할 일 등록은 회원만 할 수 있도록 세팅하기 때문에
+        // toEntity의 매개값으로 User 엔터티도 함께 전달해야 합니다. -> userId로 회원 엔터티를 조회해야 함.
+        User user = getUser(userId);
+
+        todoRepository.save(requestDTO.toEntity(user));//dto->entity
+        log.info("할 일 저장 완료! 제목: {}", requestDTO.getTitle());
+        // 할 일 저장이 끝나면 목록을 불러오는데, 지금까지는 그냥 전부 다 갖고 왔어도 된다.
+        // 이제는 회원별로 할 일을 등록하기 때문에, 방금 할 일을 추가한 그 회원의 목록을 가져와야 합니다.
+        return retrieve(userId);
     }
 
-    //할 일 목록 가져오기 //@@@복습 List<Todo> 역할
-    public TodoListResponseDTO retrieve() throws Exception {
-        List<Todo> entityList = todoRepository.findAll();
+
+    // 할 일 목록 가져오기
+    public TodoListResponseDTO retrieve(String userId) throws Exception {
+
+        // 로그인 한 유저의 정보를 데이터베이스에서 조회
+        User user = getUser(userId);
+
+        List<Todo> entityList = todoRepository.findAllByUser(user);
 
         List<TodoDetailResponseDTO> dtoList = entityList.stream()
                 //.map(entity -> new TodoDetailResponseDTO(entity))//람다
@@ -44,30 +61,62 @@ public class TodoService {
 
     }
 
-    public TodoListResponseDTO delete(final String todoId) throws Exception { //+final todoId 변경 불가
+    public TodoListResponseDTO delete(final String todoId, final String userId) throws Exception { //+final todoId 변경 불가
+        //jpql 업데이트문 or JPA
+        //JPA 방식
 
         Todo todo = todoRepository.findById(todoId).orElseThrow(
+
                 () -> {
-                    log.error("id가 존재하지 않아 삭제에 실패했습니다 -ID: {}", todoId);
+                    log.error("id가 존재하지 않아 삭제에 실패했습니다. - ID: {}", todoId);
                     throw new RuntimeException("id가 존재하지 않아 삭제에 실패했습니다.");
                 }
         );
-
         todoRepository.deleteById(todoId);
 
-        return retrieve();
+        return retrieve(userId);
     }
 
-    public TodoListResponseDTO update(final TodoModifyRequestDTO requestDTO) throws Exception {
-        //jpql 업데이트문 or JPA
-        //JPA 방식
-        Optional<Todo> targetEntity = todoRepository.findById(requestDTO.getId());
+    //final @@@ 없으면 바뀌는지?
+    public TodoListResponseDTO update(final TodoModifyRequestDTO requestDTO, final String userId) throws Exception {
+        Optional<Todo> targetEntity
+                = todoRepository.findById(requestDTO.getId());
         //Optional은 NPE 발생 방지
+        //Optional<T> 클래스를 사용해 NPE를 방지할 수 있도록 도와준다.
+        //Optional<T>는 null이 올 수 있는 값을 감싸는 Wrapper 클래스로, 참조하더라도 NPE가 발생하지 않도록 도와준다
+
 
         targetEntity.ifPresent(todo -> {//만약 존재한다면 메서드( Optional 객체 안에 값이 있는 경우에만)
             todo.setDone(requestDTO.isDone());
             todoRepository.save(todo);
         });
-        return retrieve(); //왜 리턴타입 변경되는지
+
+        return retrieve(userId); //왜 리턴타입 변경되는지
     }
+
+    private User getUser(String userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new RuntimeException("회원 정보가 없습니다.")
+        );
+        return user;
+    }
+
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
