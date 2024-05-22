@@ -20,8 +20,8 @@ public class TodoCreateRequestDTO {
     //dto를 entity로 변환
     public Todo toEntity(User user){
         return Todo.builder()
-                .title(this.title)
-                .user(user) //@@@ this.
+                .title(this.title) //갖고 있는거
+                .user(user) //@@ 매개값으로 전달됨
                 .build();
     }
 

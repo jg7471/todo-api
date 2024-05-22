@@ -20,8 +20,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // 자동 권한 검사를 컨트롤러의 메서드에서 전역적으로 수행하기 위한 설정.
-//@EnableGlobalMethodSecurity(prePostEnabled = true) //@@@
+@EnableMethodSecurity // 자동 권한 검사를 컨트롤러의 메서드에서 전역적으로 수행하기 위한 설정. //부트3
+//@EnableGlobalMethodSecurity(prePostEnabled = true) //부트2 사용x
 @RequiredArgsConstructor //JwtAuthFilter 주입 받기
 public class WebSecurityConfig {
 
@@ -50,6 +50,12 @@ public class WebSecurityConfig {
 
                                 // '/api/todos' 라는 요청이 post로 들어오고, Role 값이 ADMIN인 경우 권한 검사 없이 허용하겠다.
                                 //.requestMatchers(HttpMethod.POST, "/api/todos").hasRole("ADMIN")
+
+                                // /api/auth/**은 permit이지만, /promote는 검증이 필요하기에 추가(순서 주의 *permitAll 후순위)
+                                .requestMatchers(HttpMethod.PUT, "/api/auth/promote")
+                                .authenticated()
+                                .requestMatchers("/api/auth/load-profile").authenticated()
+
                                 //'/api/auth'로 시작하는 요청과 '/'요청은 권한 검사 없이 허용하겠다.
                                 .requestMatchers("/", "/api/auth/**").permitAll() //마지막에만 .permitAll()
 

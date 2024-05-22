@@ -15,8 +15,7 @@ public interface UserRepository extends JpaRepository<User, String> {
     //이메일 중복 체크
     //@Query("SELECT COUNT(*) FROM User u WHERE u.email =: email") //JPQL 방식
 
-    //@@@ JPA 종류, key 사용하면 만능?
-    //exists 만 붙이면 되는??? @@@
+    //exists 만 붙이면 되는 : 쿼리메서드 문법* 간단한거 @@
     boolean existsByEmail(String email); //리턴타입 boolean
 
 

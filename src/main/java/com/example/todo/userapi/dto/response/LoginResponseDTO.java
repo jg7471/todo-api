@@ -27,6 +27,6 @@ public class LoginResponseDTO {
         this.userName = user.getUserName();
         this.joinDate = LocalDate.from(user.getJoinDate()); //LocalDateTime -> LocalDate 형변환(필요값만 받기)
         this.token = token; //핵심
-        this.role = String.valueOf(user.getRole()); //@@@
+        this.role = String.valueOf(user.getRole()); //@@
     }
 }

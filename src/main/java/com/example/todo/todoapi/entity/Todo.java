@@ -28,7 +28,7 @@ public class Todo {
     @CreationTimestamp
     private LocalDateTime createDate; //등록 시간
 
-    //단방향 @@@
+    //단방향 @@ 양방향이면 @OneToMany -> User에
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;

@@ -54,10 +54,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
                 authorityList.add(new SimpleGrantedAuthority(tokenUserInfo.getRole().toString()));
 
+
                 //인증 완료 처리
                 //spring security에게 인증정보를 전달해서 전역적으로 어플리케이션 내에서
                 //인증 정보를 활용할 수 있게 설정
-                AbstractAuthenticationToken auth = new UsernamePasswordAuthenticationToken( //AbstractAuthenticationToken 다형성 적용@@@
+                AbstractAuthenticationToken auth = new UsernamePasswordAuthenticationToken( //AbstractAuthenticationToken 다형성 적용@@ 왼쪽이 상속 : 좌우 타입 다름 : 부모자식 관ㄱ{
                         tokenUserInfo, //컨트롤러에서 활용할 유저 정보
                         null, //인증된 사용자의 비밀번호 -보통 null값
                         authorityList //인가정보(권한 정보)
