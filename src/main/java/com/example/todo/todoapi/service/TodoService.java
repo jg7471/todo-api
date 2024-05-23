@@ -74,7 +74,6 @@ public class TodoService {
         //JPA 방식
 
         Todo todo = todoRepository.findById(todoId).orElseThrow(
-
                 () -> {
                     log.error("id가 존재하지 않아 삭제에 실패했습니다. - ID: {}", todoId);
                     throw new RuntimeException("id가 존재하지 않아 삭제에 실패했습니다.");
@@ -105,6 +104,7 @@ public class TodoService {
     private User getUser(String userId) {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new RuntimeException("회원 정보가 없습니다.")
+                //() : 익명 함수 @@@
         );
         return user;
     }

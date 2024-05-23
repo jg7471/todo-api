@@ -36,7 +36,7 @@ public class TokenProvider {
     public String createToken(User userEntity) {
         // 토큰 만료 시간 생성
         Date expiry = Date.from(
-                Instant.now().plus(1, ChronoUnit.DAYS)
+                Instant.now().plus(30, ChronoUnit.SECONDS)
         );
 
         //토큰 생성
@@ -62,14 +62,14 @@ public class TokenProvider {
                 //token Header에 들어갈 서명
                 .signWith(
                         Keys.hmacShaKeyFor(SECRET_KEY.getBytes()),
-                        SignatureAlgorithm.HS512 //암호화
+                        SignatureAlgorithm.HS512
                 )
-                //token payload에 들어갈 클레임 설정
-                .setClaims(claims) //제일 위로
-                .setIssuer("Todo운영자")//iss: 발급자 정보(必)
-                .setIssuedAt(new Date())//iat: 발급 시간(必)
-                .setExpiration(expiry) //exp: 만료 시간(必)
-                .setSubject(userEntity.getId()) //sub: 토큰을 식별할 수 있는 주 데이터
+                // token payload에 들어갈 클레임 설정
+                .setClaims(claims) // 추가 클레임을 먼저 설정해야 함.
+                .setIssuer("Todo운영자") // iss: 발급자 정보
+                .setIssuedAt(new Date()) // iat: 발급 시간
+                .setExpiration(expiry) // exp: 만료 시간
+                .setSubject(userEntity.getId()) // sub: 토큰을 식별할 수 있는 주요 데이터
                 .compact();
     }
 
@@ -83,8 +83,8 @@ public class TokenProvider {
         Claims claims = Jwts.parserBuilder()
                 //토큰 발급자의 발급 당시의 서명을 넣어줌.
                 .setSigningKey(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()))
-                //서명 위조 검사: 만약 위조된 경우 -> 예외 발생처리
-                //위조가 되지 않은 경우 payload를 리턴
+                // 서명 위조 검사: 위조된 경우에는 예외가 발생합니다.
+                // 위조가 되지 않은 경우 payload를 리턴
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
@@ -96,6 +96,5 @@ public class TokenProvider {
                 .email(claims.get("email", String.class)) //email -> String 타입으로
                 .role(Role.valueOf(claims.get("role", String.class)))
                 .build();
-
     }
 }

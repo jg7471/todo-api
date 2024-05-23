@@ -21,6 +21,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     Optional<User> findByEmail(String email); //메서드 직접 선언
 
+    //워크 벤치 SQL 언제?@@ entity에서
 
 
 
