@@ -34,18 +34,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     //필터가 해야 할 작업을 기술 : 정해진 내용이라 흐름만 알기(복붙 사용해도 ok)
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
+    protected void doFilterInternal(HttpServletRequest request, //request에서 http 받아옴 1
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
 
         //토큰 위조검사 및 인증완료 처리
 
-        String token = parseBearerToken(request);
+        String token = parseBearerToken(request); //2 토큰만 추출
         log.info("JWT Token Filter is running... - token: {}", token);
 
         // 토큰 위조검사 및 인증 완료 처리
-        if (token != null) {
+        if (token != null && !token.equals("null")) { //문자열 null인지도 체크
             // 토큰 서명 위조 검사와 토큰을 파싱해서 클레임을 얻어내는 작업.
             TokenUserInfo tokenUserInfo = tokenProvider.validateAndGetTokenUserInfo(token);
 

@@ -21,6 +21,8 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     Optional<User> findByEmail(String email); //메서드 직접 선언
 
+    //리프레시 토큰으로 사용자 정보 조회하기
+    Optional<User> findByRefreshToken(String refreshToken);
     //워크 벤치 SQL 언제?@@ entity에서
 
 

@@ -29,6 +29,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -103,7 +105,13 @@ public class UserService {
 
         // 로그인 성공 후에 클라이언트에게 뭘 리턴해 줄 것인가?
         // -> JWT를 클라이언트에 발급해 주어야 한다! -> 로그인 유지를 위해!
-        String token = tokenProvider.createToken(user);
+        Map<String, String> token = getTokenMap(user);
+
+        //리프레시 토큰은 수며이 김(long)(2~3주 ~ 2~3개월)
+        //DB에 저장해 놓고, 새로운 엑세스 토큰 요청 때마다 만료일을 조회해서 비교
+        user.changeRefreshToken(token.get("refresh_token"));
+        user.changeRefreshExpiryDate(tokenProvider.getExpiryDate(token.get("refresh_token")));
+        userRepository.save(user);
 
         return new LoginResponseDTO(user, token);
 
@@ -122,9 +130,21 @@ public class UserService {
         User saved = userRepository.save(user);
 
         //토큰 재발급!(새롭게 변경된 정보가 반영된)
-        String token = tokenProvider.createToken(saved);
+        Map<String, String> token = getTokenMap(user);
 
         return new LoginResponseDTO(saved, token); //@@@
+    }
+
+
+    //메소드 화 시킴 @@@
+    private Map<String, String> getTokenMap(User user) {
+        String accessToken = tokenProvider.createAccessKey(user);
+        String refreshToken = tokenProvider.createRefreshKey(user);
+
+        Map<String, String> token = new HashMap<>();
+        token.put("access_token", accessToken);
+        token.put("refresh_token", refreshToken);
+        return token;
     }
 
     /*
@@ -181,7 +201,7 @@ public class UserService {
         User foundUser = userRepository.findByEmail(userDTO.getKakaoAccount().getEmail()).orElseThrow();
 
         //우리 사이트에서 사용하는 jwt 생성
-        String token = tokenProvider.createToken(foundUser);
+        Map<String, String> token = getTokenMap(foundUser);
 
         //기존에 로그인했던 사용자의 access token값을 update
         foundUser.changeAccessToken(accessToken); //@@@
@@ -288,5 +308,21 @@ public class UserService {
         }
 
         return null;
+    }
+
+    public String renewalAccessToken(Map<String, String> tokenRequest) {
+        String refreshToken = tokenRequest.get("refreshToken"); //어디서 get //@@@
+        boolean isValid = tokenProvider.validateRefreshToken(refreshToken);
+        if(isValid){
+            //토큰 값이 유효하다면 만료일자를 검사하자
+            User foundUser = userRepository.findByRefreshToken(refreshToken).orElseThrow();
+            //만료일이 오늘보다 이전이 아니라면 -> 만료되지 않았다면 20240610 // 20240524
+            if(!foundUser.getRefreshTokenExpiryDate().before(new Date())){
+                String newAccessKey = tokenProvider.createAccessKey(foundUser);
+                return newAccessKey;
+            }
+        }
+        //리프레시 토큰도 맛이 갔다면 줄 게 없다...
+        return refreshToken; //리턴 String @@@
     }
 }

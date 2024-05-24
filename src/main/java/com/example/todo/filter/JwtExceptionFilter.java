@@ -21,6 +21,7 @@ import java.util.Objects;
 @Component
 @Slf4j
 public class JwtExceptionFilter extends OncePerRequestFilter {
+//authFilter 발생한 예외처리 받는 연결고리@@@
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -28,16 +29,20 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
         try {
             //예외가 발생하지 않으면 필터를 통과
             filterChain.doFilter(request, response);
-        } catch (ExpiredJwtException e) { //ExpiredJwtException 타입의 예외가 발생하면, 해당 예외 객체가 e 변수에 저장
+        } catch (ExpiredJwtException e) { //ExpiredJwtException 타입의 예외가 발생하면, 해당 예외 객체가 e 변수에 저장 @@@
             //토큰이 만료되었을 시 Auth Filter에서 예외가 발생 -> 앞에 있는 Exception Filter로 전달
             request.setAttribute("exception", ErrorCode.EXPIRED_TOKEN);
             setErrorResponse(response, ErrorCode.EXPIRED_TOKEN);
         } catch (JwtException e) {//@@ MalformedJwtException | SignatureException : jwt(부모)=토큰(mal)/서명(sig) : 부모 관계에 따라 위치 상하 조정
             request.setAttribute("exception", ErrorCode.INVALID_TOKEN);
             setErrorResponse(response, ErrorCode.INVALID_TOKEN);
+        } catch (IllegalArgumentException e){
+            log.warn("토큰이 전달되지 않음!");
+            setErrorResponse(response, ErrorCode.INVALID_AUTH);
         }
     }
 
+    //화면단에 에러 리턴, 매개값 없으니 ResponseEntity 사용 불가 @@@
     private void setErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
         //헤더
         response.setStatus(errorCode.getHttpStatus().value());
